@@ -1,0 +1,58 @@
+version: "3.5"
+x-logging:
+  &default-logging
+  driver: json-file
+  options:
+    max-size: '12m'
+    max-file: '5'
+x-sysctls:
+  &default-sysctls
+  - net.core.somaxconn=1024
+x-ulimits:
+  &default-ulimits
+  nproc: 65535
+  nofile:
+    soft: 655360
+    hard: 655360
+
+
+
+
+services:
+  pritunl:
+    image: jippi/pritunl:1.29.2664.67
+    container_name: vpn
+    volumes:
+      - ${PWD}/rabbitmq/master:/var/lib/rabbitmq
+      - ${PWD}/plugins/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ${PWD}/erlang.cookie:/var/lib/rabbitmq/.erlang.cookie
+
+    ports:
+      - 1194:1194
+      - 80:80
+      - 443:443
+    privileged: true
+
+
+    # hostname: pritunl
+
+    environment:
+      - "PRITUNL_MONGODB_URI=mongodb://mongo:27017/pritunl"
+      - "TZ=UTC"
+
+    # depends_on:
+    #   - mongo
+
+    network_mode: bridge
+
+    # extra_hosts:
+    #   - rabbitmq2:172.28.0.3
+
+    # networks:
+    #   rabbitmq_network:
+    #     ipv4_address: 172.28.0.2
+
+
+    logging: *default-logging
+    sysctls: *default-sysctls
+    ulimits: *default-ulimits

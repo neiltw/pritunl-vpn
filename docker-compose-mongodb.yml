@@ -1,0 +1,41 @@
+version: "3.5"
+x-logging:
+  &default-logging
+  driver: json-file
+  options:
+    max-size: '12m'
+    max-file: '5'
+x-sysctls:
+  &default-sysctls
+  - net.core.somaxconn=1024
+x-ulimits:
+  &default-ulimits
+  nproc: 65535
+  nofile:
+    soft: 655360
+    hard: 655360
+
+
+
+services:
+  mongo:
+    image: mongo:4.0.24
+    container_name: pritunldb
+    hostname: pritunldb
+    network_mode: bridge
+    volumes:
+      - ${PWD}/db:/data/db
+    ports:
+      - 27017:27017
+
+    # extra_hosts:
+    #   - rabbitmq2:172.28.0.3
+
+    # networks:
+    #   rabbitmq_network:
+    #     ipv4_address: 172.28.0.2
+
+
+    logging: *default-logging
+    sysctls: *default-sysctls
+    ulimits: *default-ulimits
